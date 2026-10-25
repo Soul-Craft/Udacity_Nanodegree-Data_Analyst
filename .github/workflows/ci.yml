@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The repo is mostly data and notebooks (320 MB); the check needs only the scripts.
+          filter: blob:none
+          sparse-checkout: '**/*.py'
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: 3.x
+      # Syntax check only: the scripts are course exercises with no declared dependencies or tests.
+      - name: Byte-compile every Python file
+        run: |
+          n=$(find . -name '*.py' -not -path './.git/*' | wc -l)
+          echo "compiling $n files"
+          test "$n" -gt 0
+          python -m compileall -q .
+
+  # Owner, 2026-10-25: every Dependabot update merges once all other jobs pass, majors too.
+  dependabot-merge:
+    needs: [compile]
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    permissions: {contents: write, pull-requests: write}
+    steps:
+      - run: gh pr merge --squash --delete-branch "$PR"
+        env: {GH_TOKEN: "${{ github.token }}", PR: "${{ github.event.pull_request.html_url }}"}

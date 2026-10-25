@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Actions are pinned to full commit SHAs (the version is the comment beside each); all bumps in one pull request.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    groups:
+      actions:
+        patterns: ["*"]

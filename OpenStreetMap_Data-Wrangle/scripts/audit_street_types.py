@@ -23,7 +23,7 @@ def print_sorted_dict(d):
     keys = sorted(keys, key=lambda s: s.lower())
     for k in keys:
         v = d[k]
-        print "%s: %d" % (k, v) 
+        print("%s: %d" % (k, v))
 
 def is_street_name(elem):
     return (elem.tag == "tag") and (elem.attrib['k'] == "addr:street")
