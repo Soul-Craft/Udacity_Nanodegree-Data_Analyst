@@ -24,7 +24,12 @@ jobs:
         with:
           python-version: 3.x
       # Syntax check only: the scripts are course exercises with no declared dependencies or tests.
-      - run: python -m compileall -q .
+      - name: Byte-compile every Python file
+        run: |
+          n=$(find . -name '*.py' -not -path './.git/*' | wc -l)
+          echo "compiling $n files"
+          test "$n" -gt 0
+          python -m compileall -q .
 
   # Owner, 2026-10-25: every Dependabot update merges once all other jobs pass, majors too.
   dependabot-merge:
